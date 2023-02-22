@@ -19,7 +19,7 @@ namespace fpm
 template <typename BaseType, typename IntermediateType, unsigned int FractionBits, bool EnableRounding = true>
 class fixed
 {
-    static_assert(std::is_integral<BaseType>::value, "BaseType must be an integral type");
+    //static_assert(std::is_integral<BaseType>::value, "BaseType must be an integral type");
     static_assert(FractionBits > 0, "FractionBits must be greater than zero");
     static_assert(FractionBits <= sizeof(BaseType) * 8 - 1, "BaseType must at least be able to contain entire fraction, with space for at least one integral bit");
     static_assert(sizeof(IntermediateType) > sizeof(BaseType), "IntermediateType must be larger than BaseType");
@@ -47,8 +47,8 @@ public:
     template <typename T, typename std::enable_if<std::is_floating_point<T>::value>::type* = nullptr>
     constexpr inline explicit fixed(T val) noexcept
         : m_value(static_cast<BaseType>((EnableRounding) ?
-		       (val >= 0.0) ? (val * FRACTION_MULT + T{0.5}) : (val * FRACTION_MULT - T{0.5})
-		      : (val * FRACTION_MULT)))
+		       (val >= 0.0) ? (val * (T)FRACTION_MULT + T{0.5}) : (val * (T)FRACTION_MULT - T{0.5})
+		      : (val * (T)FRACTION_MULT)))
     {}
 
     // Constructs from another fixed-point type with possibly different underlying representation.
@@ -62,14 +62,14 @@ public:
     template <typename T, typename std::enable_if<std::is_floating_point<T>::value>::type* = nullptr>
     constexpr inline explicit operator T() const noexcept
     {
-        return static_cast<T>(m_value) / FRACTION_MULT;
+        return static_cast<T>(m_value) / (T)FRACTION_MULT;
     }
 
     // Explicit conversion to an integral type
     template <typename T, typename std::enable_if<std::is_integral<T>::value>::type* = nullptr>
     constexpr inline explicit operator T() const noexcept
     {
-        return static_cast<T>(m_value / FRACTION_MULT);
+        return static_cast<T>(m_value / (T)FRACTION_MULT);
     }
 
     // Returns the raw underlying value of this type.
